@@ -56,13 +56,17 @@ const padding = function (data, W, H, dim, pad, copy=true) {
 	return pad_img;
 }
 
-const convolve = function (data, W, H, kernel, copy=true) {
+const convolve = function (img, kernel, copy=true) {
 	const dim = Math.sqrt(kernel.length); //kernel dimension
 	const pad = Math.floor(dim/2); //padding
 	
-	if (dim % 2 !== 1) {
+	if (dim % 2 !== 1) 
+	{
         console.log("error in kernel dimensions");
     }
+    const W=img.width;
+    const H=img.height;
+    const data=img.data;
 	
 	console.log("padding");
 	let pad_img = padding(img.pixelData, img.width, img.height, Math.sqrt(kernel.length), Math.floor(dim/2), copy=true);
@@ -93,6 +97,14 @@ const convolve = function (data, W, H, kernel, copy=true) {
 			}
 			
 		let i = ((col_idx - pad)*H + (row_idx - pad)); // pixel index in the output image (no padding)
+		if (val < 0)
+		{
+			val=0;
+		}
+		else if (val > 255)
+		{
+			val=255;
+		}
 		conv_img[i]=val;
 		
 
