@@ -24,7 +24,6 @@
 
 const SOBEL_H = [-1, 0, 1,-2,0, 2,-1, 0, 1];
 const SOBEL_V = [1, 2, 1,0,0, 0,-1, -2, -1];
-
 /**
  * <Description>
  *
@@ -39,83 +38,172 @@ const my_function = function (img,copy=true) {
   return output;
 }
 
-//TODO function initiating a gaussian kernel 3x3 or 5x5 with sigma (stdev) as parameter
-
-
-// I need to indicate somewhere how it was calculated...
 /**
- * Calcule la valeur de la fonction Gaussienne.
+ * This function calculates the value of the Gaussian at a specific point in a matrix. given the squaring of both x and y,
+ * the values of the Gaussian distribution for (1,-1), (-1,1), (1,1) and (-1,-1) are the same, which gives the symmetrical aspect.
+ * 
  *
- * @param {integer} x - value for which we want to calculate the Gaussian Function's output.
- * @param {double} sigma - the standard deviation of the function whose x we want to transform using the Gaussian Function.
- * @return {double} - Gaussian Distribution value for given x and standard deviation.
+ * @param {integer} x - x value for which we want to calculate the Gaussian Function's output.
+ * @param {integer} x - y value for which we want to calculate the Gaussian Function's output.
+ * @param {double} sigma - the standard deviation of the function whose (x,y) we want to transform using the Gaussian Function.
+ * @return {double} - Gaussian Distribution value for given (x,y) pair and standard deviation.
+ *
+ * @author Peter Bock
+ */
+const unitaryGaussian = (x,y,sigma) => Math.exp(( -((x*x) + (y*y))/(2.0*sigma*sigma) ) ) * (1/(2.0*(sigma*sigma)*Math.PI));
+    
+
+/**
+ * Generates a kernel by using the given values. the generated kernel is centered around the middle, at coordinates (0,0).
+ *
+ * The chosen implementation closely follows the methodology laid out in this article:
+ * @website https://softwarebydefault.com/2013/06/08/calculating-gaussian-kernels/
+ *
+ * @param {integer} kernelSize - The size of the 1D kernel to generate. This MUST be a non-even number !
+ * @param {double} sigma - Threshold defined by user.
+
+ * @return {array} - generated 2D kernel, stored in a 1D array.
+ *
+ * @author Peter Bock
+ */
+
+
+const kernelGenerator = (kernelSize,sigma,kernelFunction) => {
+    
+
+    let kernel = [];
+    let kernelRadius = Math.floor(kernelSize/2);
+    let val = 0;
+    let counter = 0;
+    
+    for (let y = -kernelRadius; y <= kernelRadius; y++){
+
+	for(let x = -kernelRadius; x <= kernelRadius; x++){
+	    val = kernelFunction(x,y,sigma);
+	    kernel[counter] = val;
+	    
+	    counter += 1;
+	}
+    } 
+    
+    return kernel;
+}; 
+
+
+/**
+ * normalizes a given array
+ *
+ * @param {array} kernel - the array to normalize
+ * @return {array} - normalized array.
+ *
+ * @author Peter Bock
+ */
+const normalize = (array) => {
+
+    let sum = array.reduce((sum,x) => sum+x ,0);
+    let z = 1.0 / sum;
+    let normalizedArray = [];
+    //let display = "";
+    
+    for (let i = 0; i < array.length; i++){
+	
+    
+	
+        normalizedArray[i] = array[i] * z;
+	
+	//display += parseFloat(gaussian2D[i]);
+	
+	//((i+1)%3===0) ? display += "\n" : display += "\t";
+	
+    } 
+
+
+    //console.log(display);
+
+    return normalizedArray;
+};
+
+
+
+
+/**
+ * Uses the kernelGenerator() and normalize() functions to create a normalized Gaussian kernel.
+ *
+ * @param {int} kernelSize - size of the normalized Gaussian kernel to generate
+ * @param {double} sigma - Threshold chosen by user (affects the blurring impact of the gaussian kernel).
+ * @return {array} - normalized Gaussian kernel.
+ *
+ * @author Peter Bock
+ */
+const gaussianKernel = (kernelSize,sigma) => normalize(kernelGenerator( kernelSize, sigma, unitaryGaussian ));
+
+
+
+
+
+
+// LAPLACIAN OF GAUSSIAN algorithm.
+
+// laplacian of gaussian LoG first convolves the Gaussian and Laplacian filters together, then does a local maxima search.
+
+
+
+
+
+/**
+ * This function calculates the value of the Laplacian of Gaussian at a specific point in a matrix. 
+ * given the squaring of both x and y, the values of the Laplacian of Gaussian distribution
+ * for (1,-1), (-1,1), (1,1) and (-1,-1) are the same, which gives the symmetrical aspect.
+ * 
+ *
+ * @param {integer} x - x value for which we want to calculate the Laplacian of Gaussian Function's output.
+ * @param {integer} y - y value for which we want to calculate the Laplacian of Gaussian Function's output.
+ * @param {double} sigma - Threshold chosen by user (affects the blurring impact of the gaussian kernel).
+ * @return {double} - Laplacian of Gaussian Distribution value for given (x,y) pair and threshold value.
  *
  * @author peter bock
  */
-const gaussian = (x,sigma) => Math.pow(Math.E, ( -(x*x)/(2.0*sigma*sigma) ) )/Math.sqrt(2.0*sigma*sigma*Math.PI);
-    
+const unitaryLoG = (x,y,sigma) => Math.exp(( -((x*x) + (y*y))/(2.0*sigma*sigma) ) ) * (-1/(Math.pow(sigma,4)*Math.PI)) * (1 - ((Math.pow(x,2) + Math.pow(y,2)) / (2*Math.pow(sigma,2))));
 
-var gaussianDistribution = function(x, mu, sigma)
-        {
-            var d = x - mu;
-            var n = 1.0 / (Math.sqrt(2 * Math.PI) * sigma);
-            return Math.exp(-d*d/(2 * sigma * sigma)) * n;
-        };
+
+
 
 
 /**
- * Generates a Gaussian 1D kernel for Gaussian Smoothing.
- * TO DO: integrate error checking to avoid generating kernels with even kernelSize arguments.
+ * This function calculates the Laplacian of Gaussian kernel, using the LoG unitary calculator and the normalize() function.
+ * 
  *
- * @param {integer} kernelSize - The size of the 1D kernel to generate. This MUST be a non-even number !
- * @param {double} sigma - the standard deviation of the function whose x we want to transform using the Gaussian Function.
- * @return {array} - 1D Gaussian kernel for convolutions.
+ * @param {int} kernelSize - size of the normalized Gaussian kernel to generate
+ * @param {double} sigma - Threshold chosen by user (affects the blurring impact of the gaussian kernel).
+ * @return {array} - Laplacian of Gaussian kernel
  *
- * @author
+ * @author peter bock
  */
-const gaussian1DKernel = (kernelSize, sigma) => Array.from(new Array(kernelSize), (x,i) => gaussian((i-kernelSize/2), sigma));
-    
+const logKernel = (kernelSize,sigma) => normalize(kernelGenerator( kernelSize, sigma, unitaryLoG ));
 
+
+
+
+
+//// MAXIMA SEARCH
 
 /**
- * Generates a Gaussian 2D kernel for Gaussian Smoothing, by multiplying 2 identical 1D Gaussian kernels to
+ * <Description>
  *
- * BUG: generated matrices are in no way identical to the examples on the internet...
- *
- * @param {integer} kernel1D - The 1D kernel to use. This MUST be generated from a non-even number !
- * @return {array} - generated 2D gaussian kernel.
+ * @param {type} <name> - <Description>
+ * @return {type} - <Description>
  *
  * @author
  */
 
 
-const gaussian2DKernel = (gaussian1D) => {
-    
 
-    let gaussian2D = [];
-    let display = "";
 
-    for (A of gaussian1D) {
-	for (B of gaussian1D) {
-	    
-	    gaussian2D.push(A*B);
 
-	    display += parseFloat(A*B);
-	    display += "\t";
-	    
-	}
 
-	display += "\n";
-    }
 
-    console.log(display);
-    
-    
-    return gaussian2D;
-    
-    
-    
-}
+
+
 /**
  * <Description>
  *
