@@ -33,8 +33,6 @@ const SOBEL_V = [1, 2, 1,0,0, 0,-1, -2, -1];
  *
  * @author
  */
- 
- 
 const my_function = function (img,copy=true) {
   let ouput =  TImage.from(img,copy);
   // TODO
@@ -43,6 +41,89 @@ const my_function = function (img,copy=true) {
 
 //TODO function initiating a gaussian kernel 3x3 or 5x5 with sigma (stdev) as parameter
 
+
+// I need to indicate somewhere how it was calculated...
+/**
+ * Calcule la valeur de la fonction Gaussienne.
+ *
+ * @param {integer} x - value for which we want to calculate the Gaussian Function's output.
+ * @param {double} sigma - the standard deviation of the function whose x we want to transform using the Gaussian Function.
+ * @return {double} - Gaussian Distribution value for given x and standard deviation.
+ *
+ * @author peter bock
+ */
+const gaussian = (x,sigma) => Math.pow(Math.E, ( -(x*x)/(2.0*sigma*sigma) ) )/Math.sqrt(2.0*sigma*sigma*Math.PI);
+    
+
+var gaussianDistribution = function(x, mu, sigma)
+        {
+            var d = x - mu;
+            var n = 1.0 / (Math.sqrt(2 * Math.PI) * sigma);
+            return Math.exp(-d*d/(2 * sigma * sigma)) * n;
+        };
+
+
+/**
+ * Generates a Gaussian 1D kernel for Gaussian Smoothing.
+ * TO DO: integrate error checking to avoid generating kernels with even kernelSize arguments.
+ *
+ * @param {integer} kernelSize - The size of the 1D kernel to generate. This MUST be a non-even number !
+ * @param {double} sigma - the standard deviation of the function whose x we want to transform using the Gaussian Function.
+ * @return {array} - 1D Gaussian kernel for convolutions.
+ *
+ * @author
+ */
+const gaussian1DKernel = (kernelSize, sigma) => Array.from(new Array(kernelSize), (x,i) => gaussian((i-kernelSize/2), sigma));
+    
+
+
+/**
+ * Generates a Gaussian 2D kernel for Gaussian Smoothing, by multiplying 2 identical 1D Gaussian kernels to
+ *
+ * BUG: generated matrices are in no way identical to the examples on the internet...
+ *
+ * @param {integer} kernel1D - The 1D kernel to use. This MUST be generated from a non-even number !
+ * @return {array} - generated 2D gaussian kernel.
+ *
+ * @author
+ */
+
+
+const gaussian2DKernel = (gaussian1D) => {
+    
+
+    let gaussian2D = [];
+    let display = "";
+
+    for (A of gaussian1D) {
+	for (B of gaussian1D) {
+	    
+	    gaussian2D.push(A*B);
+
+	    display += parseFloat(A*B);
+	    display += "\t";
+	    
+	}
+
+	display += "\n";
+    }
+
+    console.log(display);
+    
+    
+    return gaussian2D;
+    
+    
+    
+}
+/**
+ * <Description>
+ *
+ * @param {type} <name> - <Description>
+ * @return {type} - <Description>
+ *
+ * @author
+ */
 const padding = function (data, W, H, dim, pad, copy=true) {
 	
 	//const pW=W+(pad*2);
@@ -56,6 +137,15 @@ const padding = function (data, W, H, dim, pad, copy=true) {
 	return pad_img;
 }
 
+
+/**
+ * <Description>
+ *
+ * @param {type} <name> - <Description>
+ * @return {type} - <Description>
+ *
+ * @author
+ */
 const convolve = function (img, kernel, copy=true) {
 	const dim = Math.sqrt(kernel.length); //kernel dimension
 	const pad = Math.floor(dim/2); //padding
@@ -115,6 +205,30 @@ const convolve = function (img, kernel, copy=true) {
 	console.log(conv_img);
 	return conv_img;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //next functions are for Canny algorithm, please de not modify 
 	
@@ -230,17 +344,3 @@ const canny = function(img, low_thr, high_thr, copy=true)
     
     return edges;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
