@@ -22,8 +22,23 @@
  * Jean-Christophe Taveau
  */
 
-class TVolume {
-  constructor() {
-  
-  }
-}
+/**
+ * @module math
+ */
+ 
+/**
+ * Add a constant value to all the raster pixels
+ * 
+ * @param {number} v - Constant value
+ * @param {Raster} img - Input image
+ * @param {boolean} copy_mode - Useless here, only for compatibility with the other processing functions
+ * @return {object} - Returns an object containing min, max, mean, variance
+ *
+ * @author Jean-Christophe Taveau
+ */
+const addK = (v) => (img, copy_mode = true) => {
+  let output = T.Raster.from(img);
+  output.pixelData.forEach( (px) => px + v);
+};
+
+
