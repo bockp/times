@@ -22,8 +22,31 @@
  * Jean-Christophe Taveau
  */
  
-class TRender {
-  constructor() {
-  
-  }
-}
+
+import Raster from './Raster';
+import Image from './Image';
+import Stack from './Stack';
+import Window from './Window';
+
+
+/* Process/color */
+import {red,blue,green,alpha} from './process/color';
+import {luminance} from './process/color';
+import {hue, saturation, value} from './process/color';
+import {toABGR} from './process/color';
+import {splitChannels} from './process/color';
+
+/* Process/utils */
+import {pipe} from './process/utils';
+
+/* Process/view */
+import {montage,view} from './process/view';
+
+/* Render */
+import {renderUint8,renderRGBA} from './render/render2D';
+
+export {Raster,Image,Stack,Window};
+export {red,blue,green,alpha, luminance, hue, saturation, value, splitChannels,toABGR};
+export {pipe};
+export {montage,view};
+export {renderUint8,renderRGBA};

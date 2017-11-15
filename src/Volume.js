@@ -22,10 +22,12 @@
  * Jean-Christophe Taveau
  */
 
-class TStack {
+
+class TVolume {
+  /**
+   * @constructor
+   */
   constructor() {
-    // Array of TImage
-    this.slices = [];
+  
   }
 }
-
